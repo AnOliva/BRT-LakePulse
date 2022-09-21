@@ -15,13 +15,13 @@ The folders are devided as follow:
    - *1_rarefaction.R*: rarefaction of sampled 16S rRNA sequences.
    - *2_pathogen_extraction.R* : extraction of the potential pathogens based on the ePathogen datase and a partial match algorithm.
    - *3_clustering_analysis.R*: clustering analysis to form groups of similar pathogens based on Sorensen dissimilarity index.
-   - 
+   
 3. *2_BRT_preprocessing*
    - *1_combined_variables.R*: load all the independent variables, verify the flags and normalize the data.
    - *2_collinearity_CDOM-TSS.R*: check Pearson correlation and the generalized variance inflation factor (GVIF) for TSS and CDOM datasets.
    - *2_collinearity_QC.R*: check Pearson correlation and the GVIF for the quality controlled dataset .
    - *2_collinearity_upscaled.R*: check Pearson correlation and the GVIF for the upscaled dataset.
-   - 
+    
 5. *BRT*
    - *1_normalization.R*: set/edit the destination directory for BRT results, loads required datasets and make preparation for the BRT scripts.
    - *2_BRT_preliminary.R*: calculate 5 consecutive BRT for each combination of BRT parameters defined in an hypergrid. Select the best combination.
