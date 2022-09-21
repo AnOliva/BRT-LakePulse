@@ -5,26 +5,31 @@ Author: Anaïs Oliva
 Correspondence: anais.oliva@usherbrooke.ca
 
 ## Overview - Usage
-This repository contains all the scripts used in Oliva et al. (2021, 2022).
+This repository contains all the scripts used in Oliva et al. (2022, submitted and under review).
 
 The folders are devided as follow:
-1. *1_microbes_preprocessing*
-   - *1_rarefaction*
-   - *2_pathogen_extraction*
-   - *3_clustering_analysis*
-3. *2_BRT_preprocessing*
-   - *1_combined_variables*
-   - *2_collinearity_CDOM-TSS*
-   - *2_collinearity_QC*
-   - *2_collinearity_upscaled*
-5. *BRT*
-   - *1_normalization*
-   - *2_BRT_preliminary*
-   - *3_BRT_bootstrap*
 
-to process data, model 1000 bootstrapped Boosted Regression Trees and 
+1. *1_microbes_preprocessing*
+   - *1_rarefaction.R*: rarefaction of sampled 16S rRNA sequences.
+   - *2_pathogen_extraction.R* : extraction of the potential pathogens based on the ePathogen datase and a partial match algorithm.
+   - *3_clustering_analysis.R*: clustering analysis to form groups of similar pathogens based on Sorensen dissimilarity index.
+   - 
+3. *2_BRT_preprocessing*
+   - *1_combined_variables.R*: load all the independent variables, verify the flags and normalize the data.
+   - *2_collinearity_CDOM-TSS.R*: check Pearson correlation and the generalized variance inflation factor (GVIF) for TSS and CDOM datasets.
+   - *2_collinearity_QC.R*: check Pearson correlation and the GVIF for the quality controlled dataset .
+   - *2_collinearity_upscaled.R*: check Pearson correlation and the GVIF for the upscaled dataset.
+   - 
+5. *BRT*
+   - *1_normalization.R*: set/edit the destination directory for BRT results, loads required datasets and make preparation for the BRT scripts.
+   - *2_BRT_preliminary.R*: calculate 5 consecutive BRT for each combination of BRT parameters defined in an hypergrid. Select the best combination.
+   - *3_BRT_bootstrap.R*: using the best tuned parameters, calculate 1000 bootstrapped (with replacement) BRTs for each dependent variable.
 
 ## Citation
 
 
 ## Reference
+Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. The occurrence of potentially pathogenic fungi and protists in Canadian lakes predicted using geomatics, in situ and satellite-derived variables: Towards a tele-epidemiological approach. Water Res. 209, 117935. https://doi.org/10.1016/j.watres.2021.117935
+
+Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. A multi-indicator mapping analysis reveals a spatial hotspot of a putative bacterial pathogens assemblage in Canadian prairie lakes that is linked to anthropogenically-altered landscapes. Water Res. *submitted*.
+
