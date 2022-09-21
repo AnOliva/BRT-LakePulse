@@ -1,0 +1,2 @@
+"dptvar";"shrinkage";"tree.complexity";"bag.fraction";"stepsize";"optimal.trees";"min.RMSE";"dev.tot";"dev.res";"dev.exp";"nbrobs";"p.dev.exp"
+"Cluster.3";0.03;1;1;30;901;2.61;10.82;6.83;3.99;413;36.9
