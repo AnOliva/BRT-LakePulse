@@ -26,10 +26,6 @@ The folders are devided as follow:
    - *3_BRT_bootstrap.R*: using the best tuned parameters, calculate 1000 bootstrapped (with replacement) BRTs for each dependent variable.
 
 ## Citation
-
-
-## Reference
-Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. The occurrence of potentially pathogenic fungi and protists in Canadian lakes predicted using geomatics, in situ and satellite-derived variables: Towards a tele-epidemiological approach. Water Res. 209, 117935. https://doi.org/10.1016/j.watres.2021.117935
-
 Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. A multi-indicator mapping analysis reveals a spatial hotspot of a putative bacterial pathogens assemblage in Canadian prairie lakes that is linked to anthropogenically-altered landscapes. Water Res. *submitted*.
 
+Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. The occurrence of potentially pathogenic fungi and protists in Canadian lakes predicted using geomatics, in situ and satellite-derived variables: Towards a tele-epidemiological approach. Water Res. 209, 117935. https://doi.org/10.1016/j.watres.2021.117935
