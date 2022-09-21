@@ -5,7 +5,9 @@ Author: Anaïs Oliva
 Correspondence: anais.oliva@usherbrooke.ca
 
 ## Overview - Usage
-This repository contains all the scripts used in Oliva et al. (2022, submitted and under review).
+This repository contains scripts used in Oliva et al. (submitted and under review) to: (1) explore the diversity of potentially pathogenic bacteria (PPB); (2) build a multi-indicator model of anthropogenic fecal contamination from a cluster of PPB; and (3) predict the bacterial multi-indicator over thousands of lakes.
+
+This study is based on the abundance of 16S rRNA amplicon sequences of PPB sampled in 413 lakes within 8 southern Canadian ecozones and representing a wide diversity of lakes and watershed land use
 
 The folders are devided as follow:
 
@@ -25,7 +27,7 @@ The folders are devided as follow:
    - *2_BRT_preliminary.R*: calculate 5 consecutive BRT for each combination of BRT parameters defined in an hypergrid. Select the best combination.
    - *3_BRT_bootstrap.R*: using the best tuned parameters, calculate 1000 bootstrapped (with replacement) BRTs for each dependent variable.
 
-## Citation
+## Citations
 Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. A multi-indicator mapping analysis reveals a spatial hotspot of a putative bacterial pathogens assemblage in Canadian prairie lakes that is linked to anthropogenically-altered landscapes. Water Res. *submitted*.
 
 Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. The occurrence of potentially pathogenic fungi and protists in Canadian lakes predicted using geomatics, in situ and satellite-derived variables: Towards a tele-epidemiological approach. Water Res. 209, 117935. https://doi.org/10.1016/j.watres.2021.117935
