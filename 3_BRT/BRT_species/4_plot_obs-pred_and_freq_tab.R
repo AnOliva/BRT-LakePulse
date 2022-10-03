@@ -5,7 +5,7 @@
 # Script author: Anais Oliva anais.oliva@usherbrooke.ca
 
 # set working directory
-setwd("E:/LakePulse/Chapter_2/3_BRT/results")
+setwd("/3_BRT/results")
 
 # libraries
 library(tidyr)
@@ -13,7 +13,7 @@ library(dplyr)
 library(ggplot2)
 
 # observations
-obs = read.csv("E:/LakePulse/Chapter_2/2_BRT_preprocessing/results/QC_dataset_16S_nseqs_rar.txt", sep=";")
+obs = read.csv("/2_BRT_preprocessing/results/QC_dataset_16S_nseqs_rar.txt", sep=";")
 # set idLatLong to column
 obs$idLatLong = rownames(obs)
 # gather obs
@@ -22,14 +22,14 @@ obs = obs[,c("idLatLong", "Cluster.3"), drop = F]
 colnames(obs) = c("idLatLong","observed")
 
 # predictions QC
-preds.QC <- read.csv("E:/LakePulse/Chapter_2/3_BRT/results/QC_poisson/predictions.csv")
+preds.QC <- read.csv("/3_BRT/results/QC_poisson/predictions.csv")
 # select the cluster that was upscaled
 preds.QC = preds.QC[,c("V2","medianr_Cluster.3")]
 # rename columns
 colnames(preds.QC) = c("idLatLong","predicted")
 
 # predictions upscaled
-preds.upscaled <- read.csv("E:/LakePulse/Chapter_2/3_BRT/results/upscaled_poisson/predictions.csv")
+preds.upscaled <- read.csv("/3_BRT/results/upscaled_poisson/predictions.csv")
 # select median
 preds.upscaled = preds.upscaled[,c("V2","medianr")]
 # rename columns
@@ -108,7 +108,7 @@ write.table(data.combined[data.combined$mod.type == "Poisson-QC" ,], "data.combi
 write.table(data.combined[data.combined$mod.type == "Poisson-upscaled" ,], "data.combined.upscaled.sub.csv", sep = ",", row.names =  F)
 
 ## extract upscaled
-preds.upscaled <- read.csv("E:/LakePulse/Chapter_2/3_BRT/results/upscaled_poisson/predictions.csv")
+preds.upscaled <- read.csv("/3_BRT/results/upscaled_poisson/predictions.csv")
 preds.upscaled =  preds.upscaled[,c("V2", "medianr","rangeCI95")]
 # renames columns
 colnames(preds.upscaled) = c("idLatLong", "predictions","rangeCI95")
@@ -118,7 +118,7 @@ write.table(preds.upscaled , "data.upscaled.csv", sep = ",", row.names =  F)
 
 
 ## table of frequency per ecozones
-upscaled.dataset <- read.csv("E:/LakePulse/Data_LakePulse/upscaled_dataset/upscaled.dataset.txt", sep=";")
+upscaled.dataset <- read.csv("/upscaled.dataset.txt", sep=";")
 
 # merging
 upscaled.data = merge(preds.upscaled, upscaled.dataset[,c("idLatLong", "ecozone")],by.x = "idLatLong", by.y = "idLatLong")

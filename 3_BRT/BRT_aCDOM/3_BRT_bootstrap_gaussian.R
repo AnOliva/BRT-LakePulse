@@ -22,7 +22,7 @@ if (file.exists(plotDir)){
 # tuned parameters
 preliminary.selection <- read.csv("preliminary.selection.txt", sep=";")
 # non-sampled lakes
-variables_combined <- read.csv("E:/LakePulse/Chapter_2/2_BRT_preprocessing/results/variables_combined.txt", sep=";")
+variables_combined <- read.csv("/2_BRT_preprocessing/results/variables_combined.txt", sep=";")
 # keep observations in sampled ecozones
 variables_combined = variables_combined[variables_combined$ecozone == "Prairies" | 
                                           variables_combined$ecozone == "WestMont" |
@@ -66,9 +66,7 @@ multiResultClass <- function(RI.final=NULL,
                              pplotlist.final = NULL,
                              varlist.final = NULL,
                              min.RMSE=NULL,
-                             optimal.trees=NULL,
-                             dev.tot=NULL,
-                             dev.res=NULL
+                             optimal.trees=NULL
 )
 {
   me <- list(
@@ -80,9 +78,7 @@ multiResultClass <- function(RI.final=NULL,
     pplotlist.final = pplotlist.final,
     varlist.final = varlist.final,
     min.RMSE = min.RMSE,
-    optimal.trees = optimal.trees,
-    dev.tot = dev.tot,
-    dev.res = dev.res
+    optimal.trees = optimal.trees
   )
   
   ## Set the name for the class
@@ -106,7 +102,7 @@ ptm <- proc.time()
 
 # 3: beginning for l loop
 BRT.model.2 <- foreach(i = 1:nrow(preliminary.selection)) %:% # nbr of dpt variables
-  foreach(j = 1:10, # 1000 models per dpt variable
+  foreach(j = 1:1000, # 1000 models per dpt variable
           #.multicombine = T,
           .packages = c("gbm",
                         "dismo",
@@ -182,10 +178,6 @@ BRT.model.2 <- foreach(i = 1:nrow(preliminary.selection)) %:% # nbr of dpt varia
             result$min.RMSE <- sqrt(min(as.numeric(unlist(BRT.final.boot$cv.values), na.rm = TRUE)))
             # optimal number of trees median over 1000 bootstrap
             result$optimal.trees <- BRT.final.boot$n.trees
-            # deviance total
-            result$dev.tot <- BRT.final.boot$self.statistics$mean.null
-            # redisual deviance
-            result$dev.res <- BRT.final.boot$cv.statistics$deviance.mean
             # predictions
             result$prediction.final <- as.data.frame(cbind(BRT.final.boot[["fold.fit"]],rownames(BRT.final.boot[["gbm.call"]][["dataframe"]]),
                                                            V3=j))
@@ -266,14 +258,6 @@ for (k in 1:length(BRT.model.2)) {
     # minimal RMSE
     final.selection$min.RMSE.boot[k] <- as.numeric(arrange(as.data.frame(rlist::list.rbind(BRT.model.2[[k]])) %>%
                                         summarise(min.RMSE = median(as.numeric(min.RMSE), na.rm = TRUE))))
-    # total deviance
-    final.selection$dev.tot.boot[k] <- as.numeric(arrange(as.data.frame(rlist::list.rbind(BRT.model.2[[k]])) %>%
-                                       summarise(dev.tot = median(as.numeric(dev.tot), na.rm = TRUE))))
-    # residual deviance
-    final.selection$dev.res.boot[k] <- as.numeric(arrange(as.data.frame(rlist::list.rbind(BRT.model.2[[k]])) %>%
-                                       summarise(dev.res = median(as.numeric(dev.res), na.rm = T))))
-    # explained deviance
-    final.selection$dev.exp.boot[k] <- as.numeric(as.numeric(final.selection$dev.tot.boot[k]) - as.numeric(final.selection$dev.res.boot[k]))
     # prediction old
     # extract all the predictions in a df
     prediction.final[[k]] = do.call("rbind", unlist(lapply(BRT.model.2[[k]], `[`, 2), recursive = FALSE))
@@ -320,10 +304,10 @@ for (k in 1:length(BRT.model.2)) {
     data = cbind(na.omit(full.dataset[][order(row.names(full.dataset[])), ][,rownames(final.selection)[k]]),
           prediction.final[[k]][order(prediction.final[[k]]$V2), ])
     
-    final.selection$dev.res.boot2[k] <- dismo::calc.deviance(obs=na.omit(full.dataset[][order(row.names(full.dataset[])), ][,rownames(final.selection)[k]]),
+    final.selection$dev.res.boot[k] <- dismo::calc.deviance(obs=na.omit(full.dataset[][order(row.names(full.dataset[])), ][,rownames(final.selection)[k]]),
                                                          pred= prediction.final[[k]][order(prediction.final[[k]]$V2), ]$medianr, family = "gaussian", calc.mean=TRUE)
     # percentage of deviance explained by the prediction median
-    final.selection$p.dev.exp.boot2[k] <- (1-final.selection$dev.res.boot2[k] /final.selection$dev.tot[k])*100
+    final.selection$p.dev.exp.boot[k] <- (1-final.selection$dev.res.boot[k] /final.selection$dev.tot[k])*100
    
     # plot
     # unlist into list
@@ -353,6 +337,10 @@ for (k in 1:length(BRT.model.2)) {
     plot.prediction.final[[k]] = plot.prediction
     
 }
+## round values
+final.selection$min.RMSE.boot <- round(final.selection$min.RMSE.boot, 2)
+final.selection$dev.res.boot <- round(final.selection$dev.res.boot, 2)
+final.selection$p.dev.exp.boot <- round(final.selection$p.dev.exp.boot, 1)
 # export
 write.table(final.selection, "final.selection.txt", sep=";", row.names = TRUE)
 

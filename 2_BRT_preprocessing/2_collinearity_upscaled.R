@@ -2,7 +2,7 @@
 # Performed in R V4.1.2
 
 # setting working directory
-setwd("E:/LakePulse/Chapter_2/scripts_github/2_BRT_preprocessing/results")
+setwd("/2_BRT_preprocessing/results")
 
 ## librairies
 library(corrplot)
@@ -10,9 +10,9 @@ library(car)
 
 ## loading data
 # combined independent variables 
-variables_combined = read.csv("E:/LakePulse/Data_LakePulse/upscaled_dataset/upscaled.dataset.subset.txt", sep=";")
+variables_combined = read.csv("/upscaled.dataset.subset.txt", sep=";")
 # species clusters
-specie = read.csv("E:/LakePulse/Chapter_2/scripts_github/1_microbes_preprocessing/results/clusters.var.txt", sep=";")
+specie = read.csv("/1_microbes_preprocessing/results/clusters.var.txt", sep=";")
 
 
 ### Pearson Correlatiob tests

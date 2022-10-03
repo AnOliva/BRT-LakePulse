@@ -4,15 +4,15 @@
 
 
 # working directory
-setwd("E:/LakePulse/Chapter_2/scripts_github/1_microbes_preprocessing")
+setwd("/1_microbes_preprocessing")
 
 # librairies
 library(dplyr)
 library(tidyr)
 
 # data loading
-data.taxon <- read.csv("E:/LakePulse/Chapter_2/scripts_github/1_microbes_preprocessing/results/rarefied_16S_413.txt", sep=";") # rarefied data
-epathogen <- read.csv("E:/LakePulse/Data_pathogen/epathogen-result.csv") # ePathogen
+data.taxon <- read.csv("/1_microbes_preprocessing/results/rarefied_16S_413.txt", sep=";") # rarefied data
+epathogen <- read.csv("/epathogen-result.csv") # ePathogen
 #CFIA <- read_excel("E:/LakePulse/Data_pathogen/CFIA/List_of_pests_regulated_by_Canada.xlsx") # CFIA
 
 
