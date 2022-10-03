@@ -25,7 +25,7 @@ The folder provides all the script used from the raw data recovered and pre-proc
    - *2_collinearity_QC.R*: check Pearson correlation and the GVIF for the quality controlled dataset .
    - *2_collinearity_upscaled.R*: check Pearson correlation and the GVIF for the upscaled dataset.
     
-5. *BRT*
+5. *BRT* (either *BRT_aCDOM* or *BRT_species*)
    - *1_normalization.R*: set/edit the destination directory for BRT results, loads required datasets and make preparation for the BRT scripts.
    - *2_BRT_preliminary.R*: calculate 5 consecutive BRT for each combination of BRT parameters defined in an hypergrid. Select the best combination.
    - *3_BRT_bootstrap.R*: using the best tuned parameters, calculate 1000 bootstrapped (with replacement) BRTs for each dependent variable.
