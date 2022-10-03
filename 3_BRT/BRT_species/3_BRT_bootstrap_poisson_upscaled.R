@@ -21,7 +21,7 @@ if (file.exists(plotDir)){
 # tuned parameters
 preliminary.selection <- read.csv("preliminary.selection.txt", sep=";")
 # non-sampled lakes
-variables_combined <- read.csv("E:/LakePulse/Data_LakePulse/upscaled_dataset/upscaled.dataset.txt", sep=";")
+variables_combined <- read.csv("/upscaled.dataset.txt", sep=";")
 # keep observations in sampled ecozones
 variables_combined = variables_combined[variables_combined$ecozone == "Prairies" | 
                                           variables_combined$ecozone == "WestMont" |
@@ -63,9 +63,7 @@ multiResultClass <- function(RI.final=NULL,
                              pplotlist.final = NULL,
                              varlist.final = NULL,
                              min.RMSE=NULL,
-                             optimal.trees=NULL,
-                             dev.tot=NULL,
-                             dev.res=NULL
+                             optimal.trees=NULL
 )
 {
   me <- list(
@@ -77,9 +75,7 @@ multiResultClass <- function(RI.final=NULL,
     pplotlist.final = pplotlist.final,
     varlist.final = varlist.final,
     min.RMSE = min.RMSE,
-    optimal.trees = optimal.trees,
-    dev.tot = dev.tot,
-    dev.res = dev.res
+    optimal.trees = optimal.trees
   )
   
   ## Set the name for the class
@@ -103,7 +99,7 @@ doParallel::registerDoParallel(cl)
 ptm <- proc.time() 
 
 # 3: beginning for l loop
-BRT.model.2 <- foreach(j = 1:10, # 1000 models per dpt variable
+BRT.model.2 <- foreach(j = 1:1000, # 1000 models per dpt variable
           #.multicombine = T,
           .packages = c("gbm",
                         "dismo",
@@ -182,10 +178,6 @@ BRT.model.2 <- foreach(j = 1:10, # 1000 models per dpt variable
             result$min.RMSE <- sqrt(min(as.numeric(unlist(BRT.final.boot$cv.values), na.rm = TRUE)))
             # optimal number of trees median over 1000 bootstrap
             result$optimal.trees <- BRT.final.boot$n.trees
-            # deviance total
-            result$dev.tot <- BRT.final.boot$self.statistics$mean.null
-            # redisual deviance
-            result$dev.res <- BRT.final.boot$cv.statistics$deviance.mean
             # predictions
             result$prediction.final <- as.data.frame(cbind(exp(BRT.final.boot[["fold.fit"]]),rownames(BRT.final.boot[["gbm.call"]][["dataframe"]]),
                                                            V3=j))
@@ -266,47 +258,6 @@ final.selection$optimal.trees.boot <- as.numeric(arrange(as.data.frame(rlist::li
 # minimal RMSE
 final.selection$min.RMSE.boot <- as.numeric(arrange(as.data.frame(rlist::list.rbind(BRT.model.2)) %>%
                                                       summarise(min.RMSE = median(as.numeric(min.RMSE), na.rm = TRUE))))
-# total deviance
-final.selection$dev.tot.boot <- as.numeric(arrange(as.data.frame(rlist::list.rbind(BRT.model.2)) %>%
-                                                     summarise(dev.tot = median(as.numeric(dev.tot), na.rm = TRUE))))
-# residual deviance
-final.selection$dev.res.boot <- as.numeric(arrange(as.data.frame(rlist::list.rbind(BRT.model.2)) %>%
-                                                     summarise(dev.res = median(as.numeric(dev.res), na.rm = T))))
-# explained deviance
-final.selection$dev.exp.boot <- as.numeric(as.numeric(final.selection$dev.tot.boot) - as.numeric(final.selection$dev.res.boot))
-# prediction old
-# extract all the predictions in a df
-prediction.final[[k]] = do.call("rbind", unlist(lapply(BRT.model.2[[k]], `[`, 2), recursive = FALSE))
-# transform into numeric
-prediction.final[[k]]$V1 <- as.numeric(prediction.final[[k]]$V1)
-# remove number behind points
-prediction.final[[k]][,"V2"] <- try(gsub("\\..*","",unlist(prediction.final[[k]][,"V2"], use.names = FALSE)), TRUE) 
-# transform into factor
-prediction.final[[k]][,"V2"] <- as.factor(prediction.final[[k]][,"V2"])
-# average predictions by bootstrap
-prediction.final[[k]] <- aggregate(prediction.final[[k]]$V1, list(prediction.final[[k]]$V2, prediction.final[[k]]$V3), FUN=mean) 
-
-# average of predictions by row while avoiding the NA
-prediction.final[[k]] <- prediction.final[[k]]  %>%     
-  group_by(Group.1) %>%
-  summarize(medianr = median(x, na.rm = TRUE), meansr = mean(x, na.rm = TRUE),
-            lowquant = quantile(x, probs=c(0.025), na.rm = TRUE), highquant = quantile(x, probs=c(0.975), na.rm = TRUE))
-prediction.final[[k]]$rangeCI95 = prediction.final[[k]]$highquant - prediction.final[[k]]$lowquant
-# rename
-colnames(prediction.final[[k]]) = c("V2","medianr","meansr","lowquant",  "highquant", "rangeCI95")
-# prediction new
-# extract all the predictions in a df
-prediction.new = do.call("rbind", unlist(lapply(BRT.model.2, `[`, 3), recursive = FALSE))
-# transform into numeric
-prediction.new$V1 <- as.numeric(prediction.new$V1)
-# remove number behind points
-prediction.new[,"V2"] <- try(gsub("\\..*","",unlist(prediction.new[,"V2"], use.names = FALSE)), TRUE) 
-# average of predictions by row while avoiding the NA
-prediction.new <- prediction.new  %>%     
-  group_by(V2) %>%
-  summarize(medianr = median(V1, na.rm = TRUE), meansr = mean(V1, na.rm = TRUE),
-            lowquant = quantile(V1, probs=c(0.025), na.rm = TRUE), highquant = quantile(V1, probs=c(0.975), na.rm = TRUE))
-prediction.new$rangeCI95 = prediction.new$highquant - prediction.new$lowquant
 # relative influence
 RI.final = do.call("rbind", unlist(lapply(BRT.model.2, `[`, 1), recursive = FALSE))
 # relative influence median for each dependent variable stored in list
@@ -315,15 +266,6 @@ RI.final <- RI.final %>%
   summarise_each(funs(median(., na.rm = TRUE)))
 # ordering decreasing by relative influence
 RI.final <- RI.final [order(-RI.final$rel.inf), ]
-
-# deviance explained by the prediction median
-data = cbind(na.omit(full.dataset[][order(row.names(full.dataset[])), ][,final.selection$dptvar]),
-             prediction.final[order(prediction.final$V2), ])
-
-final.selection$dev.res.boot2 <- dismo::calc.deviance(obs=na.omit(full.dataset[][order(row.names(full.dataset[])), ][,final.selection$dptvar]),
-                                                      pred= prediction.final[order(prediction.final$V2), ]$medianr, family = "poisson", calc.mean=TRUE)
-# percentage of deviance explained by the prediction median
-final.selection$p.dev.exp.boot2 <- (1-final.selection$dev.res.boot2 /final.selection$dev.tot)*100
 
 # plot
 # unlist into list
@@ -351,6 +293,65 @@ for (w in 1:length(indpdt.x)) {
 }
 plot.prediction.med.final = plot.prediction.med
 plot.prediction.final = plot.prediction
+# prediction old
+# extract all the predictions in a df
+prediction.final = do.call("rbind", unlist(lapply(BRT.model.2, `[`, 2), recursive = FALSE))
+# prediction new
+# extract all the predictions in a df
+prediction.new = do.call("rbind", unlist(lapply(BRT.model.2, `[`, 3), recursive = FALSE))
+
+# remove df
+rm(BRT.model.2, ecozones.var, ecozones, multiResultClass, cl)
+# reset memory
+gc(reset = T)
+
+# prediction old
+# transform into numeric
+prediction.final$V1 <- as.numeric(prediction.final$V1)
+# remove number behind points
+prediction.final[,"V2"] <- try(gsub("\\..*","",unlist(prediction.final[,"V2"], use.names = FALSE)), TRUE) 
+# transform into factor
+prediction.final[,"V2"] <- as.factor(prediction.final[,"V2"])
+# average predictions by bootstrap
+prediction.final <- aggregate(prediction.final$V1, list(prediction.final$V2, prediction.final$V3), FUN=mean) 
+# average of predictions by row while avoiding the NA
+prediction.final <- data.table::setDT(prediction.final)[,list(medianr=median(x, na.rm = TRUE), 
+                                                              meansr=mean(x, na.rm = TRUE), 
+                                                              lowquant=quantile(x, probs=c(0.025), na.rm = TRUE),
+                                                              highquant = quantile(x, probs=c(0.975), na.rm = TRUE)), by=Group.1]
+
+# calculate CI range
+prediction.final$rangeCI95 = prediction.final$highquant - prediction.final$lowquant
+# rename
+colnames(prediction.final) = c("V2","medianr","meansr","lowquant",  "highquant", "rangeCI95")
+
+
+# transform into numeric
+prediction.new$V1 <- as.numeric(prediction.new$V1)
+# remove number behind points
+prediction.new[,"V2"] <- try(gsub("\\..*","",unlist(prediction.new[,"V2"], use.names = FALSE)), TRUE) 
+# average of predictions by row while avoiding the NA
+prediction.new <- data.table::setDT(prediction.new)[,list(medianr=median(V1, na.rm = TRUE), 
+                                                          meansr=mean(V1, na.rm = TRUE), 
+                                                          lowquant=quantile(V1, probs=c(0.025), na.rm = TRUE),
+                                                          highquant = quantile(V1, probs=c(0.975), na.rm = TRUE)), by=V2]
+# reset memory
+gc(reset = T)
+# calculate CI range
+prediction.new$rangeCI95 = prediction.new$highquant - prediction.new$lowquant
+# deviance explained by the prediction median
+data = cbind(na.omit(full.dataset[][order(row.names(full.dataset[])), ][,final.selection$dptvar]),
+             prediction.final[order(prediction.final$V2), ])
+
+final.selection$dev.res.boot <- dismo::calc.deviance(obs=na.omit(full.dataset[][order(row.names(full.dataset[])), ][,final.selection$dptvar]),
+                                                     pred= prediction.final[order(prediction.final$V2), ]$medianr, family = "poisson", calc.mean=TRUE)
+# percentage of deviance explained by the prediction median
+final.selection$p.dev.exp.boot <- (1-final.selection$dev.res.boot /final.selection$dev.tot)*100
+
+## round values
+final.selection$min.RMSE.boot <- round(final.selection$min.RMSE.boot, 2)
+final.selection$dev.res.boot <- round(final.selection$dev.res.boot, 2)
+final.selection$p.dev.exp.boot <- round(final.selection$p.dev.exp.boot, 1)
 # export
 write.table(final.selection, "final.selection.txt", sep=";", row.names = F)
 
@@ -425,7 +426,8 @@ graphics.off()
 
 
 
-
+# reset memory
+gc(reset = T)
 
 
 

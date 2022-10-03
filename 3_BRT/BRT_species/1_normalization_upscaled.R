@@ -2,7 +2,7 @@
 # Performed in R V4.1.2
 
 # create folder if missing
-mainDir <- "E:/LakePulse/Chapter_2/scripts_github/3_BRT/results"
+mainDir <- "3_BRT/results"
 subDir <- "upscaled_poisson"
 ifelse(!dir.exists(file.path(mainDir, subDir)), dir.create(file.path(mainDir, subDir)), FALSE)
 
@@ -10,7 +10,7 @@ ifelse(!dir.exists(file.path(mainDir, subDir)), dir.create(file.path(mainDir, su
 setwd(paste0(mainDir, "/",subDir))
 
 # loading dataset
-full.dataset <- read.csv("E:/LakePulse/Chapter_2/scripts_github/2_BRT_preprocessing/results/upscaled_dataset_16S_nseqs_rar.txt", sep=";")
+full.dataset <- read.csv("/2_BRT_preprocessing/results/upscaled_dataset_16S_nseqs_rar.txt", sep=";")
 
 # reorder by rownames (ATTENTION: important to keep same results as in old dataset)
 full.dataset = full.dataset[order(rownames(full.dataset)), ] 
@@ -32,4 +32,4 @@ ecozones = full.dataset[,c("ecozone"), drop = F]
 full.dataset = full.dataset[, ! names(full.dataset) %in% c( "ecozone")]
 
 # number of cores
-nbrcore = 6
+nbrcore = 5

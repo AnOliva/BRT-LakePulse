@@ -5,14 +5,17 @@ Author: Anaïs Oliva
 Correspondence: anais.oliva@usherbrooke.ca
 
 ## Overview - Usage
-This repository contains scripts used in Oliva et al. (submitted and under review) to: (1) explore the diversity of potentially pathogenic bacteria (PPB); (2) build a multi-indicator model of anthropogenic fecal contamination from a cluster of PPB; and (3) predict the bacterial multi-indicator over thousands of lakes.
+This repository contains scripts used in Oliva *et al.* (*Water Research*, submitted and under review).
+This study aims: (1) to explore the diversity of potentially pathogenic bacteria (PPB) found in 413 Canadian lakes; (2) to build a multi-indicator model of anthropogenic fecal contamination from a cluster of PPB; and (3) to predict the bacterial multi-indicator over thousands of lakes. 
 
-This study is based on the abundance of 16S rRNA amplicon sequences of PPB sampled in 413 lakes within 8 southern Canadian ecozones and representing a wide diversity of lakes and watershed land use
+Boosted Regression Tree (BRT) models were averaged over 1000 bootstrap samples to determine the most influent environmental variables related to the abundance of the bacterial clusters and to make predictions.
 
-The folders are devided as follow:
+The folder provides all the script used from the raw data recovered and pre-processed to the BRT model outputs.
+
+## Folder contents
 
 1. *1_microbes_preprocessing*
-   - *1_rarefaction.R*: rarefaction of sampled 16S rRNA sequences.
+   - *1_rarefying.R*: rarefaction of sampled 16S rRNA sequences.
    - *2_pathogen_extraction.R* : extraction of the potential pathogens based on the ePathogen datase and a partial match algorithm.
    - *3_clustering_analysis.R*: clustering analysis to form groups of similar pathogens based on Sorensen dissimilarity index.
    
@@ -22,7 +25,7 @@ The folders are devided as follow:
    - *2_collinearity_QC.R*: check Pearson correlation and the GVIF for the quality controlled dataset .
    - *2_collinearity_upscaled.R*: check Pearson correlation and the GVIF for the upscaled dataset.
     
-5. *BRT*
+5. *BRT* (either *BRT_aCDOM* or *BRT_species*)
    - *1_normalization.R*: set/edit the destination directory for BRT results, loads required datasets and make preparation for the BRT scripts.
    - *2_BRT_preliminary.R*: calculate 5 consecutive BRT for each combination of BRT parameters defined in an hypergrid. Select the best combination.
    - *3_BRT_bootstrap.R*: using the best tuned parameters, calculate 1000 bootstrapped (with replacement) BRTs for each dependent variable.

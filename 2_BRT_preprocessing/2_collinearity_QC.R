@@ -2,7 +2,7 @@
 # Performed in R V4.1.2
 
 # setting working directory
-setwd("E:/LakePulse/Chapter_2/scripts_github/2_BRT_preprocessing/results")
+setwd("/2_BRT_preprocessing/results")
 
 ## librairies
 library(corrplot)
@@ -12,7 +12,7 @@ library(car)
 # combined independent variables 
 variables_combined = read.csv("variables_combined.txt", sep=";")
 # species clusters
-specie = read.csv("E:/LakePulse/Chapter_2/scripts_github/1_microbes_preprocessing/results/clusters.var.txt", sep=";")
+specie = read.csv("/1_microbes_preprocessing/results/clusters.var.txt", sep=";")
 
 
 ### Pearson Correlation tests

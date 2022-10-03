@@ -2,7 +2,7 @@
 # Performed in R V4.1.2
 
 # set working directory
-setwd("E:/LakePulse/Chapter_2/scripts_github/1_microbes_preprocessing/results")
+setwd("/1_microbes_preprocessing/results")
 
 # librairies
 library(dplyr)
@@ -16,8 +16,6 @@ library("ggplotify")
 
 ## data loading
 specie <- read.csv("epathogen_16S_nseqs_rar.txt", sep=";")
-#full.dataset <- read.csv("E:/LakePulse/Chapter_2/scripts_github/2_gbm_preprocessing/results/full_dataset_16S_nseqs_rar_413.txt", sep=";")
-
 
 
 ## normalisation of data
