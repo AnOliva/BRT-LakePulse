@@ -30,6 +30,10 @@ The folder provides all the script used from the raw data recovered and pre-proc
    - *2_BRT_preliminary.R*: calculate 5 consecutive BRT for each combination of BRT parameters defined in an hypergrid. Select the best combination.
    - *3_BRT_bootstrap.R*: using the best tuned parameters, calculate 1000 bootstrapped (with replacement) BRTs for each dependent variable.
 
+## Notes
+For the BRT, *bigmemory* and *foreach* packages were used to share the memory and work between cores and speed up the process.
+Those might be memory consuming (32 GB of RAM were used for the script *3_BRT_bootstrap.R*).
+
 ## Citations
 Oliva, A., Onana, E.V., Garner, R.E., Kraemer, S.A., Fradette, M., Walsh, D.A., Huot, Y., 2022. A multi-indicator mapping analysis reveals a spatial hotspot of a putative bacterial pathogens assemblage in Canadian prairie lakes that is linked to anthropogenically-altered landscapes. Water Res. *submitted*.
 
