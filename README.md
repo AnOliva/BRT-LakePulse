@@ -12,7 +12,7 @@ Boosted Regression Tree (BRT) models were averaged over 1000 bootstrap samples t
 
 The folder provides all the script used from the raw data recovered and pre-processed to the BRT model outputs.
 
-The folders are devided as follow:
+## Folder contents
 
 1. *1_microbes_preprocessing*
    - *1_rarefying.R*: rarefaction of sampled 16S rRNA sequences.
