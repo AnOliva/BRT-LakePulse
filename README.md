@@ -8,7 +8,7 @@ Correspondence: anais.oliva@usherbrooke.ca
 This repository contains scripts used in Oliva *et al.* (*Water Research*, submitted and under review).
 This study aims: (1) to explore the diversity of potentially pathogenic bacteria (PPB) found in 413 Canadian lakes; (2) to build a multi-indicator model of anthropogenic fecal contamination from a cluster of PPB; and (3) to predict the bacterial multi-indicator over thousands of lakes. 
 
-Boosted Regression Tree (BRT) models were averaged over 1000 bootstrap samples to determine the most influent environmental variables related to the abundance of the bacterial clusters and to make predictions.
+Boosted Regression Tree (BRT) models were applied over 1000 bootstrap samples through a boostrap aggregating (or bagging) ensemble method. This helped to determine the most influent environmental variables related to the abundance of the bacterial clusters and to make predictions.
 
 The folder provides all the script used from the raw data recovered and pre-processed to the BRT model outputs.
 
