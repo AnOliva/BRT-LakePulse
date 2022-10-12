@@ -6,12 +6,12 @@ library(bigmemory)
 library(foreach)
 library(dplyr)
 # load normalization script
-source("E:/LakePulse/Chapter_2/scripts_github_export_2022_12_10/3_BRT/BRT_aCDOM/1_normalization_gaussian.R")
+source("E:/LakePulse/ARGs/BRT/3_BRT/BRT_gaussian/1_normalization_gaussian_QC.R")
 
 ## parameters of hypergrid to be tuned
 depdt.name <- colnames(full.dataset[ , ! names(full.dataset) %in% indpdt.x, drop = F])
 lr = .03
-tc = c(1:5)
+tc = c(1:3)
 bf = c(.7, .8, .9, 1)
 ss = c(10,20,30,40)
 
@@ -237,9 +237,9 @@ preliminary.selection <- hyper.grid.preliminary[ hyper.grid.preliminary$min.RMSE
 ## round values
 preliminary.selection$optimal.trees <- round(preliminary.selection$optimal.trees, 0)
 preliminary.selection$min.RMSE <- round(preliminary.selection$min.RMSE, 2)
-preliminary.selection$dev.tot <- round(preliminary.selection$dev.tot, 2)
-preliminary.selection$dev.res <- round(preliminary.selection$dev.res, 2)
-preliminary.selection$dev.exp <- round(preliminary.selection$dev.exp, 2)
+preliminary.selection$dev.tot <- round(preliminary.selection$dev.tot, 6)
+preliminary.selection$dev.res <- round(preliminary.selection$dev.res, 6)
+preliminary.selection$dev.exp <- round(preliminary.selection$dev.exp, 3)
 
 ## export hypergrid and tuned parameter table
 write.table(hyper.grid.preliminary, "hyper.grid.preliminary.txt", sep=";", row.names = FALSE) # print the hypergrid and remove the vectors in column 1

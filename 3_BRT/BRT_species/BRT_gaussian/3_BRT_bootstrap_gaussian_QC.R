@@ -9,7 +9,7 @@ library(foreach)
 library(dplyr)
 library(ggplot2)
 # load normalization script
-source("E:/LakePulse/Chapter_2/scripts_github_export_2022_12_10/3_BRT/BRT_aCDOM/1_normalization_QC.R")
+source("E:/LakePulse/ARGs/BRT/3_BRT/BRT_gaussian/1_normalization_gaussian_QC.R")
 
 ## create partial_plot folder if it does not exist
 plotDir <- "partial_plot" # plot directory
@@ -24,21 +24,13 @@ if (file.exists(plotDir)){
 # tuned parameters
 preliminary.selection <- read.csv("preliminary.selection.txt", sep=";")
 # non-sampled lakes
-variables_combined <- read.csv("/2_BRT_preprocessing/results/variables_combined.txt", sep=";")
-# keep observations in sampled ecozones
-variables_combined = variables_combined[variables_combined$ecozone == "Prairies" | 
-                                          variables_combined$ecozone == "WestMont" |
-                                          variables_combined$ecozone == "Boreal Plains" |
-                                          variables_combined$ecozone == "Boreal Shield" |
-                                          variables_combined$ecozone == "Atlantic Maritime" |
-                                          variables_combined$ecozone == "Atlantic Highlands" |
-                                          variables_combined$ecozone == "Mixedwood Plains" ,]
+variables_combined <- read.csv("E:/LakePulse/ARGs/BRT/2_BRT_preprocessing/results/variables_combined.txt", sep=";")
 # remove lakes used in full.dataset
-variables_combined = variables_combined[!(variables_combined$idLatLong %in% rownames(full.dataset)) ,]
+variables_combined = variables_combined[!(variables_combined$lakepulse_id %in% rownames(full.dataset)) ,]
 # remove lakes with NA for idLatLong
-variables_combined = variables_combined[!variables_combined$idLatLong == "" ,]
+variables_combined = variables_combined[!variables_combined$lakepulse_id == "" ,]
 # rename rownames to idLatLong
-rownames(variables_combined) <- variables_combined$idLatLong
+rownames(variables_combined) <- variables_combined$lakepulse_id
 # keep same columns as in full.dataset
 variables_combined <- variables_combined[ ,  names(variables_combined) %in% indpdt.x]
 # ecozones separated
@@ -104,7 +96,7 @@ ptm <- proc.time()
 
 # 3: beginning for l loop
 BRT.model.2 <- foreach(i = 1:nrow(preliminary.selection)) %:% # nbr of dpt variables
-  foreach(j = 1:1000, # 1000 models per dpt variable
+  foreach(j = 1:10, # 1000 models per dpt variable
           #.multicombine = T,
           .packages = c("gbm",
                         "dismo",
@@ -381,14 +373,14 @@ predictions.prob <- prediction.final %>% purrr::reduce(full_join, by="V2") # ext
 rownames(predictions.prob) <- predictions.prob$V2
 # round numeric column
 predictions.prob <- data.frame(lapply(predictions.prob,    # Using Base R functions
-                                      function(x) if(is.numeric(x)) round(x, 2) else x))
+                                      function(x) if(is.numeric(x)) round(x, 4) else x))
 #--- Predictions in probabilities for new dataset ---#
 predictions.merged <- prediction.new %>% purrr::reduce(full_join, by='V2') # extract the prediction in a dataframe
 # add idlake
 rownames(predictions.merged) <- predictions.merged$V2
 # round numeric column
 predictions.merged <- data.frame(lapply(predictions.merged,    # Using Base R functions
-                                          function(x) if(is.numeric(x)) round(x, 2) else x))
+                                          function(x) if(is.numeric(x)) round(x, 4) else x))
 # rowbinding
 predictions.merged <- rbind(predictions.prob, predictions.merged)
 # export predictions and categories
