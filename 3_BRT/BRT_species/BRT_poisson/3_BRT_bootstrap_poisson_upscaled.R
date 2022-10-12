@@ -8,6 +8,9 @@ library(bigmemory)
 library(foreach)
 library(dplyr)
 library(ggplot2)
+# load normalization script
+source("E:/LakePulse/Chapter_2/scripts_github_export_2022_12_10/3_BRT/BRT_species/1_normalization_poisson_upscaled.R")
+
 ## create partial_plot folder if it does not exist
 plotDir <- "partial_plot" # plot directory
 # check if plot folder if present or create it

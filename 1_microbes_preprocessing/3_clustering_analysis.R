@@ -132,33 +132,37 @@ graphics.off()
 ### Dissimilarity analysis
 ## PA matrix
 specie.t.PA <- ifelse(specie.t > 0, 1, 0)
-# Hellinger + euclidean
-#specie.t.chi = decostand(specie.t, "hel")
-#specie.t.D16 = dist(specie.t.chi)
-
 ## Sorensen
 specie.t.S8 = dist.binary(specie.t.PA, method = 5)
 # choose hclust method
 hclust.S8 = hclust(specie.t.S8, method = "ward.D2")
 # dendrogram
 dend = as.dendrogram(hclust.S8)
+# number of clusters
+nbrk = 4
+# the nbr of colors should be corresponding to the nbr of k
+cols=c("darkorange3","brown3","dodgerblue","forestgreen")
+# set colors to the branches
+dend <- color_branches(dend, k = nbrk, col = cols)
+dend %<>% set("labels_col", value = cols, k= nbrk)
+# extract colors of the cluster
+clust <- cutree(dend, k = nbrk)
+colors <- labels_colors(dend)[clust %>% sort %>% names]
+clust_cols <- colors %>% unique
 # plot
 par(mar=c(2,1,1,8), cex.axis = 0.7, cex.sub = 0.7)
-dend %>% color_branches(k=4, col = c("darkorange3","brown3","dodgerblue","forestgreen"
-                                     )) %>% plot(horiz=TRUE)
-# add horiz rect (tests with different number of clusters)
-#dend %>% rect.dendrogram(k=10,horiz=TRUE)
+dend %>% color_branches(k=nbrk, col = cols) %>% plot(horiz=TRUE)
 # add column of clusters
-specie.t[ , paste0("Cluster")] <- as.vector(cutree(dend, k=4))
+specie.t[ , paste0("Cluster")] <- as.vector(cutree(dend, k=nbrk))
 # plot simplified and horizontal dendrogram
 tiff("cluster_histo_simp.tif", width = 260, height = 100, units = "mm", res = 300)
 
 dend = as.dendrogram(hclust.S8)
-dend2 = dend %>% set("labels_col", value = c("darkorange3","brown3","dodgerblue","forestgreen"), k=4)
+dend2 = dend %>% set("labels_col", value = cols, k=nbrk)
 par(mar=c(6,2,2,2), cex.axis = 0.7, cex.sub = 0.7)
 
 dend %>% set("labels_col", value = c("white")) %>%
-  color_branches(k=4, col = c("darkorange3","brown3","dodgerblue","forestgreen"))  %>% #,"darkgoldenrod"
+  color_branches(k=nbrk, col = cols)  %>% #,"darkgoldenrod"
   plot(horiz=F, xlab = "")
 
 # Add axis labels rotated by 45 degrees
@@ -306,10 +310,7 @@ theme_minimal()
 # function to change the color of the boxplots in facet_wrap
 dummy <- ggplot(data = cluster.table.g, aes(x = rel.ab))+ facet_wrap(cluster.gr ~ ., scale = "free", nrow = 5) + 
   geom_rect(aes(fill=cluster.gr), xmin=-Inf, xmax=Inf,ymin=-Inf, ymax=Inf) +
-  scale_fill_manual(values=c("brown3",
-                             "forestgreen",
-                             "darkorange3",
-                             "dodgerblue")) +
+  scale_fill_manual(values=clust_cols) +
   theme_minimal()
 
 g1 <- ggplotGrob(p3)
@@ -367,13 +368,7 @@ m <- rbind(c(1, 2), c(1, 2)) # layout for dendrogram
 layout(m)
 
 # layout for ggplot + dend
-lay_out(list(dend %>% color_branches(k=4, col = c(
-  "darkorange3",
-  "brown3",
-  "dodgerblue",
-  "forestgreen"
-)) %>% plot(horiz=TRUE), 1:4, 1:2),
-        
+lay_out(list(dend %>% color_branches(k=nbrk, col = cols) %>% plot(horiz=TRUE), 1:4, 1:2),
         list(p4, 1:4, 3:4))
 
 dev.off()

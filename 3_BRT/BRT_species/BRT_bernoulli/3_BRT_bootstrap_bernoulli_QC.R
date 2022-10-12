@@ -8,6 +8,8 @@ library(bigmemory)
 library(foreach)
 library(dplyr)
 library(ggplot2)
+# load normalization script
+source("E:/LakePulse/ARGs/BRT/3_BRT/BRT_bernoulli/1_normalization_bernoulli_QC.R")
 ## create partial_plot folder if it does not exist
 plotDir <- "partial_plot" # plot directory
 # check if plot folder if present or create it
@@ -16,26 +18,28 @@ if (file.exists(plotDir)){
 } else {
   dir.create(file.path(getwd(), plotDir))
 }
+## create CI_thresholds folder if it does not exist
+plotDir <- "CI_thresholds" # plot directory
+# check if plot folder if present or create it
+if (file.exists(plotDir)){
+  "Folder plotDir already exists"
+} else {
+  dir.create(file.path(getwd(), plotDir))
+}
+
 
 ## loading data
 # tuned parameters
 preliminary.selection <- read.csv("preliminary.selection.txt", sep=";")
 # non-sampled lakes
-variables_combined <- read.csv("/2_BRT_preprocessing/results/variables_combined.txt", sep=";")
-# keep observations in sampled ecozones
-variables_combined = variables_combined[variables_combined$ecozone == "Prairies" | 
-                                          variables_combined$ecozone == "WestMont" |
-                                          variables_combined$ecozone == "Boreal Plains" |
-                                          variables_combined$ecozone == "Boreal Shield" |
-                                          variables_combined$ecozone == "Atlantic Maritime" |
-                                          variables_combined$ecozone == "Atlantic Highlands" |
-                                          variables_combined$ecozone == "Mixedwood Plains" ,]
+variables_combined <- read.csv("E:/LakePulse/ARGs/BRT/2_BRT_preprocessing/results/variables_combined.txt", sep=";")
+
 # remove lakes used in full.dataset
-variables_combined = variables_combined[!(variables_combined$idLatLong %in% rownames(full.dataset)) ,]
+variables_combined = variables_combined[!(variables_combined$lakepulse_id %in% rownames(full.dataset)) ,]
 # remove lakes with NA for idLatLong
-variables_combined = variables_combined[!variables_combined$idLatLong == "" ,]
+variables_combined = variables_combined[!variables_combined$lakepulse_id == "" ,]
 # rename rownames to idLatLong
-rownames(variables_combined) <- variables_combined$idLatLong
+rownames(variables_combined) <- variables_combined$lakepulse_id
 # keep same columns as in full.dataset
 variables_combined <- variables_combined[ ,  names(variables_combined) %in% indpdt.x]
 # ecozones separated
@@ -66,7 +70,7 @@ multiResultClass <- function(RI.final=NULL,
                              varlist.final = NULL,
                              min.RMSE=NULL,
                              optimal.trees=NULL
-
+                             
 )
 {
   me <- list(
@@ -103,7 +107,7 @@ ptm <- proc.time()
 
 # 3: beginning for l loop
 BRT.model.2 <- foreach(i = 1:nrow(preliminary.selection)) %:% # nbr of dpt variables
-  foreach(j = 1:1000, # 1000 models per dpt variable
+  foreach(j = 1:10, # 1000 models per dpt variable
           #.multicombine = T,
           .packages = c("gbm",
                         "dismo",
@@ -128,7 +132,7 @@ BRT.model.2 <- foreach(i = 1:nrow(preliminary.selection)) %:% # nbr of dpt varia
             result <- multiResultClass()
             
             # family type
-            BRTfamily <- "poisson"
+            BRTfamily <- "bernoulli"
             # initial number of trees
             inittrees <- 1
             # number of folds
@@ -180,7 +184,7 @@ BRT.model.2 <- foreach(i = 1:nrow(preliminary.selection)) %:% # nbr of dpt varia
             # optimal number of trees median over 1000 bootstrap
             result$optimal.trees <- BRT.final.boot$n.trees
             # predictions
-            result$prediction.final <- as.data.frame(cbind(exp(BRT.final.boot[["fold.fit"]]),rownames(BRT.final.boot[["gbm.call"]][["dataframe"]]),
+            result$prediction.final <- as.data.frame(cbind(1/(1+exp(-BRT.final.boot[["fold.fit"]])),rownames(BRT.final.boot[["gbm.call"]][["dataframe"]]),
                                                            V3=j))
             # predictions
             result$prediction.new <- as.data.frame(cbind(predict.gbm(BRT.final.boot, 
@@ -260,7 +264,7 @@ for (k in 1:length(BRT.model.2)) {
                                                                 summarise(optimal.trees = median(as.numeric(optimal.trees), na.rm = TRUE))))
   # minimal RMSE
   final.selection$min.RMSE.boot[k] <- round(as.numeric(arrange(as.data.frame(rlist::list.rbind(BRT.model.2[[k]])) %>%
-                                                           summarise(min.RMSE = median(as.numeric(min.RMSE), na.rm = TRUE)))),2)
+                                                                 summarise(min.RMSE = median(as.numeric(min.RMSE), na.rm = TRUE)))),2)
   # prediction old
   # extract all the predictions in a df
   prediction.final[[k]] = do.call("rbind", unlist(lapply(BRT.model.2[[k]], `[`, 2), recursive = FALSE))
@@ -281,6 +285,32 @@ for (k in 1:length(BRT.model.2)) {
   prediction.final[[k]]$rangeCI95 = prediction.final[[k]]$highquant - prediction.final[[k]]$lowquant
   # rename
   colnames(prediction.final[[k]]) = c("V2","medianr","meansr","lowquant",  "highquant", "rangeCI95")
+  # auc-pr value cutoff based on the prediction median
+  perf <- ROCR::performance(ROCR::prediction(prediction.final[[k]]$medianr,
+                                             full.dataset[order(rownames(full.dataset[])) , ][, rownames(final.selection)[k]]),
+                            "aucpr")
+  final.selection$aucpr[k] <- perf@y.values[[1]]
+  # auc-roc values cutoff based on the prediction median
+  perf <- ROCR::performance(ROCR::prediction(prediction.final[[k]]$medianr,
+                                             full.dataset[order(rownames(full.dataset[])) , ][, rownames(final.selection)[k]]), 
+                            "auc")
+  final.selection$aucroc[k] <- round(perf@y.values[[1]],2)
+  # auc-pr baseline according to Saito and Rehmsmeier (2015)
+  final.selection$pr.baseline[k] <- sum(full.dataset[order(rownames(full.dataset[])),][,rownames(final.selection)[k]] == "1") / (sum(full.dataset[order(rownames(full.dataset[])),][,rownames(final.selection)[k]] == "1") + sum(full.dataset[order(rownames(full.dataset[])),][,rownames(final.selection)[k]] == "0"))
+  # PR score based on the prediction median
+  perf <- ROCR::performance(ROCR::prediction(prediction.final[[k]]$medianr, 
+                                             full.dataset[order(rownames(full.dataset[])) , ][, rownames(final.selection)[k]]), 
+                            "prec", "rec")
+  df <- data.frame(cut = perf@alpha.values[[1]], prec = perf@x.values[[1]], rec = perf@y.values[[1]])
+  final.selection$pr.score[k] <- df[which.max(df$prec + df$rec), "cut"]
+  # ROC score based on the prediction median
+  perf <- ROCR::performance(ROCR::prediction(prediction.final[[k]]$medianr, 
+                                             full.dataset[order(rownames(full.dataset[])) , ][, rownames(final.selection)[k]]),
+                            "sens", "spec")
+  df <- data.frame(cut = perf@alpha.values[[1]], sens = perf@x.values[[1]], spec = perf@y.values[[1]])
+  final.selection$roc.score[k] <- round(df[which.max(df$sens + df$spec), "cut"],2)
+  # auc-pr perc difference between baseline and model performance
+  final.selection$aucpr.diff[k] <- round((final.selection$aucpr[k]-final.selection$pr.baseline[k]), 2)
   # prediction new
   # extract all the predictions in a df
   prediction.new[[k]] = do.call("rbind", unlist(lapply(BRT.model.2[[k]], `[`, 3), recursive = FALSE))
@@ -312,7 +342,7 @@ for (k in 1:length(BRT.model.2)) {
                prediction.final[[k]][order(prediction.final[[k]]$V2), ])
   
   final.selection$dev.res.boot[k] <- dismo::calc.deviance(obs=na.omit(full.dataset[][order(row.names(full.dataset[])), ][,rownames(final.selection)[k]]),
-                                                           pred= prediction.final[[k]][order(prediction.final[[k]]$V2), ]$medianr, family = "poisson", calc.mean=TRUE)
+                                                          pred= prediction.final[[k]][order(prediction.final[[k]]$V2), ]$medianr, family = "poisson", calc.mean=TRUE)
   # percentage of deviance explained by the prediction median
   final.selection$p.dev.exp.boot[k] <- (1-final.selection$dev.res.boot[k] /final.selection$dev.tot[k])*100
   
@@ -348,6 +378,12 @@ for (k in 1:length(BRT.model.2)) {
 final.selection$min.RMSE.boot <- round(final.selection$min.RMSE.boot, 2)
 final.selection$dev.res.boot <- round(final.selection$dev.res.boot, 2)
 final.selection$p.dev.exp.boot <- round(final.selection$p.dev.exp.boot, 1)
+final.selection$aucpr <- round(final.selection$aucpr, 2)
+final.selection$aucroc <- round(final.selection$aucroc, 2)
+final.selection$pr.baseline <- round(final.selection$pr.baseline, 2)
+final.selection$pr.score <- round(final.selection$pr.score, 2)
+final.selection$roc.score <- round(final.selection$roc.score, 2)
+
 # export
 write.table(final.selection, "final.selection.txt", sep=";", row.names = TRUE)
 
@@ -396,8 +432,7 @@ predictions.merged <- data.frame(lapply(predictions.merged,    # Using Base R fu
                                         function(x) if(is.numeric(x)) round(x, 2) else x))
 # rowbinding
 predictions.merged <- rbind(predictions.prob, predictions.merged)
-# export predictions and categories
-write.csv(predictions.merged, "predictions.csv", row.names = F)
+
 
 ## plots
 for (i in 1:nrow(preliminary.selection)){
@@ -455,6 +490,93 @@ for (i in 1:nrow(preliminary.selection)){
 }
 
 
+## Probability categories and contingency table cutoff
+# create a vector of cutoffs between 0.2 and 1 with an interval of 0.1
+CIcut <- c(seq(0.2, 1, 0.1))
+# load library
+library(tibble)
+# begin for d loop
+for (d in 1:nrow(final.selection)){
+  
+  aucpr <- round(final.selection$pr.score[d], 2)
+  medpred <- dplyr::select(predictions.merged, which(colnames(predictions.merged) == paste0("medianr_", rownames(final.selection)[d])))
+  cipred <- dplyr::select(predictions.merged, which(colnames(predictions.merged) == paste0("rangeCI95_", rownames(final.selection)[d])))
+  cipred.low <- dplyr::select(predictions.merged, which(colnames(predictions.merged) == paste0("lowquant_", rownames(final.selection)[d])))
+  cipred.high <- dplyr::select(predictions.merged, which(colnames(predictions.merged) == paste0("highquant_", rownames(final.selection)[d])))
+  
+  # begin for o loop
+  for (o in 1:length(CIcut)) {
+    
+    # combine into dataset
+    df <- cbind(medpred, cipred, cipred.low, cipred.high)
+    # remove observations above specific uncertainty
+    df[,2] <- ifelse(df[,2] <= CIcut[o], df[,2], NA)
+    df[,1] <- ifelse(is.na(df[,2]), NA, df[,1])
+    df[,3] <- ifelse(is.na(df[,2]), NA, df[,3])
+    df[,4] <- ifelse(is.na(df[,2]), NA, df[,4])
+    
+    # if no value found, go to next iteration
+    if (sum(df[,2], na.rm=T) == 0) next
+    
+    
+    cat.single <- NULL
+    
+    cat.single <- ifelse(df[,1] <= aucpr & #V if below aucpr value
+                           df[,3]  <= aucpr & # if low quantile is below aucpr value
+                           df[,4]  <= aucpr, # if high quantile is below aucpr value
+                         "absence", 
+                         ifelse(df[,1] >= aucpr &
+                                  df[,3] >= aucpr &
+                                  df[,4] >= aucpr,
+                                "presence",
+                                ifelse(df[,1] >= aucpr &
+                                         df[,3] < aucpr &
+                                         df[,4] > aucpr,
+                                       "probable.presence",
+                                       ifelse(df[,1] <= aucpr &
+                                                df[,3] < aucpr &
+                                                df[,4] > aucpr,
+                                              "probable.absence", NA))))
+    
+    cat.single <- as.data.frame(cat.single)
+    
+    colnames(cat.single) <- c(paste0(rownames(final.selection)[d], ".cat.", CIcut[o]))
+    predictions.merged <- cbind(predictions.merged, cat.single)
+    
+    # categories
+    predcat <- dplyr::select(predictions.merged[!(predictions.merged[,1] %in% rownames(variables_combined)) ,], # within the 382 lakes
+                             which(colnames(predictions.merged) == paste0(rownames(final.selection)[d], ".cat.", CIcut[o])))
+    
+    
+    # observations by id lake order
+    obs <- dplyr::select(as.data.frame(full.dataset[,])[order(rownames(as.data.frame(full.dataset[,]))), ],
+                         which(colnames(full.dataset[,]) == paste0(rownames(final.selection)[d])))
+    # contingency table
+    tabcont <- tidyr::spread(as.data.frame(table(obs[,1], as.factor(predcat[,1]))), "Var2", "Freq")
+    
+    
+    cols <- c(absence = 0, probable.absence = 0, presence = 0, probable.presence = 0)
+    
+    tabcont <- add_column(tabcont, !!!cols[setdiff(names(cols), names(tabcont))])
+    
+    tabcont$total <- rowSums(tabcont[,-1], na.rm = T)
+    # calculate percentages
+    tabcont.perc <- round((tabcont[,c(-1)]  / tabcont$total) * 100,1)
+    tabcont.perc <- cbind(tabcont$Var1 , tabcont.perc)
+    colnames(tabcont.perc) <- colnames(tabcont)
+    # concatenate percentages and raw numbers
+    tabcont <- as.data.frame(rbind(paste(tabcont[1,], "-",tabcont.perc[1,]), paste(tabcont[2,], "-",tabcont.perc[2,])))
+    colnames(tabcont) <- colnames(tabcont.perc)
+    tabcont$Var1 <- unlist(tabcont.perc$Var1)
+    # write the final file by species
+    write.csv(tabcont, paste0("CI_thresholds/","tabcont.", rownames(final.selection)[d], ".pr.", CIcut[o], ".csv"), row.names = F)
+    # ending for o loop
+  }
+  # ending for d loop
+}
+
+# export predictions and categories
+write.csv(predictions.merged, "predictions.csv", row.names = F)
 
 
 
@@ -465,11 +587,22 @@ for (i in 1:nrow(preliminary.selection)){
 
 
 
-
-
-
-
-
+# auc-pr value cutoff based on the prediction median???
+perf <- ROCR::performance(ROCR::prediction(preds.boot$medianr, full.dataset2[, rownames(preliminary.selection[,0])[l]]), "aucpr")
+result$aucpr <- perf@y.values[[1]]
+# auc-roc values cutoff based on the prediction median
+perf <- ROCR::performance(ROCR::prediction(preds.boot$medianr,  full.dataset2[, rownames(preliminary.selection[,0])[l]]), "auc")
+result$aucroc <- round(perf@y.values[[1]],2)
+# auc-pr baseline according to Saito and Rehmsmeier (2015)
+result$pr.baseline <- sum(full.dataset[, rownames(preliminary.selection[,0])[l]] == "1") / (sum( full.dataset[, rownames(preliminary.selection[,0])[l]] == "1") + sum( full.dataset[, rownames(preliminary.selection[,0])[l]] == "0"))
+# PR score based on the prediction median
+perf <- ROCR::performance(ROCR::prediction(preds.boot$medianr, full.dataset2[, rownames(preliminary.selection[,0])[l]]), "prec", "rec")
+df <- data.frame(cut = perf@alpha.values[[1]], prec = perf@x.values[[1]], rec = perf@y.values[[1]])
+result$pr.score <- df[which.max(df$prec + df$rec), "cut"]
+# ROC score based on the prediction median
+perf <- ROCR::performance(ROCR::prediction(preds.boot$medianr, full.dataset2[, rownames(preliminary.selection[,0])[l]]), "sens", "spec")
+df <- data.frame(cut = perf@alpha.values[[1]], sens = perf@x.values[[1]], spec = perf@y.values[[1]])
+result$roc.score <- round(df[which.max(df$sens + df$spec), "cut"],2)
 
 
 

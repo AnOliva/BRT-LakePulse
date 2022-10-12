@@ -6,12 +6,12 @@ library(bigmemory)
 library(foreach)
 library(dplyr)
 # load normalization script
-source("E:/LakePulse/Chapter_2/scripts_github_export_2022_12_10/3_BRT/BRT_aCDOM/1_normalization_gaussian.R")
+source("E:/LakePulse/ARGs/BRT/3_BRT/BRT_bernoulli/1_normalization_bernoulli_QC.R")
 
 ## parameters of hypergrid to be tuned
 depdt.name <- colnames(full.dataset[ , ! names(full.dataset) %in% indpdt.x, drop = F])
-lr = .03
-tc = c(1:5)
+lr = .01
+tc = c(1:3)
 bf = c(.7, .8, .9, 1)
 ss = c(10,20,30,40)
 
@@ -68,7 +68,6 @@ rm(random.index, bf, ss, tc, lr, depdt.name, mat)
 gc(reset = T)
 
 
-
 ## Loop that tests each dependent variables with each possible combination set in the hyper.grid
 # it uses the nbr of cores specified in element "nbrcore"
 
@@ -78,6 +77,7 @@ doParallel::registerDoParallel(cl)
 
 # timer ON for the model
 ptm <- proc.time()
+
 
 # 1: beginning for i loop
 BRT.model1.pre <- foreach(i = 1:nbrcombi) %:% # nbr of tests in hypergrid
@@ -100,7 +100,7 @@ BRT.model1.pre <- foreach(i = 1:nbrcombi) %:% # nbr of tests in hypergrid
             result <- multiResultClass()
             
             # family type
-            BRTfamily <- "gaussian"
+            BRTfamily <- "bernoulli"
             # initial number of trees
             inittrees <- 1
             # number of folds
@@ -125,7 +125,7 @@ BRT.model1.pre <- foreach(i = 1:nbrcombi) %:% # nbr of tests in hypergrid
               n.trees = inittrees,
               step.size = hgm[,"stepsize"][i],
               n.folds = nbrfolds,
-              n.cores = nbrcore,
+              n.cores = nbrcores,
               max.trees = maxitrees,
               prev.stratify = T,
               silent = T,
@@ -167,6 +167,7 @@ closeAllConnections()
 gc(reset = T)
 
 
+
 ## retrieve the 5 consecutive model for each parameter combination
 # beginning for k loop: for each parameter combination.
 for (k in 1:length(BRT.model1.pre)) {
@@ -189,22 +190,22 @@ for (k in 1:length(BRT.model1.pre)) {
     
     # optimal number of trees
     hyper.grid$optimal.trees[k] <- arrange(as.data.frame(rlist::list.rbind(BRT.model1.pre[[k]])) %>%
-                                                   summarise(optimal.trees = mean(as.numeric(optimal.trees), na.rm = TRUE)))
+                                             summarise(optimal.trees = mean(as.numeric(optimal.trees), na.rm = TRUE)))
     # minimal RMSE
     hyper.grid$min.RMSE[k] <- arrange(as.data.frame(rlist::list.rbind(BRT.model1.pre[[k]])) %>%
-                                              summarise(min.RMSE = mean(as.numeric(min.RMSE), na.rm = TRUE)))
+                                        summarise(min.RMSE = mean(as.numeric(min.RMSE), na.rm = TRUE)))
     # total deviance
     hyper.grid$dev.tot[k] <- arrange(as.data.frame(rlist::list.rbind(BRT.model1.pre[[k]])) %>%
-                                             summarise(dev.tot = mean(as.numeric(dev.tot), na.rm = TRUE)))
+                                       summarise(dev.tot = mean(as.numeric(dev.tot), na.rm = TRUE)))
     # residual deviance
     hyper.grid$dev.res[k] <- arrange(as.data.frame(rlist::list.rbind(BRT.model1.pre[[k]])) %>%
-                                             summarise(dev.res = mean(as.numeric(dev.res), na.rm = T)))
+                                       summarise(dev.res = mean(as.numeric(dev.res), na.rm = T)))
     # explained deviance
     hyper.grid$dev.exp[k] <- as.numeric(hyper.grid$dev.tot[k]) - as.numeric(hyper.grid$dev.res[k])
     
     # nbr of observations
     hyper.grid$nbrobs[k] <- arrange(as.data.frame(rlist::list.rbind(BRT.model1.pre[[k]])) %>%
-                                        summarise(nbrobs = paste0(unique(nbrobs)[1])))
+                                      summarise(nbrobs = paste0(unique(nbrobs)[1])))
     
     
   } else {
@@ -225,6 +226,10 @@ hyper.grid$dev.tot <- as.numeric(hyper.grid$dev.tot)
 hyper.grid$dev.res <- as.numeric(hyper.grid$dev.res)
 hyper.grid$nbrobs <- as.numeric(hyper.grid$nbrobs)
 
+# percentage explained deviance
+hyper.grid$p.dev.exp <- round((as.numeric(hyper.grid$dev.exp) / as.numeric(hyper.grid$dev.tot) * 100), 1)
+
+
 ## compute percentage of explained deviance
 hyper.grid$p.dev.exp <- round((as.numeric(hyper.grid$dev.exp) / as.numeric(hyper.grid$dev.tot) * 100), 1)
 
@@ -244,6 +249,4 @@ preliminary.selection$dev.exp <- round(preliminary.selection$dev.exp, 2)
 ## export hypergrid and tuned parameter table
 write.table(hyper.grid.preliminary, "hyper.grid.preliminary.txt", sep=";", row.names = FALSE) # print the hypergrid and remove the vectors in column 1
 write.table(preliminary.selection, "preliminary.selection.txt", sep=";", row.names = FALSE) # save a copy
-
-
 

@@ -2,18 +2,16 @@
 # Performed in R V4.1.2
 
 # create folder if missing
-mainDir <- "/3_BRT/results"
-subDir <- "QC_poisson"
+mainDir <- "E:/LakePulse/ARGs/BRT/3_BRT/results"
+subDir <- "QC_gaussian"
 ifelse(!dir.exists(file.path(mainDir, subDir)), dir.create(file.path(mainDir, subDir)), FALSE)
 
 # set working directory
 setwd(paste0(mainDir, "/",subDir))
 
 # loading dataset
-full.dataset <- read.csv("/2_BRT_preprocessing/results/QC_dataset_16S_nseqs_rar.txt", sep=";")
+full.dataset <- read.csv("E:/LakePulse/ARGs/BRT/2_BRT_preprocessing/results/QC_dataset.txt", sep=";")
 
-# reorder by rownames (ATTENTION: important to keep same results as in old dataset)
-full.dataset = full.dataset[order(rownames(full.dataset)), ] 
 # names of independent variables (removing clusters)
 indpdt.x = colnames(full.dataset[, ! names(full.dataset) %in% c( "Cluster.1","Cluster.2", "Cluster.3", "Cluster.4")])
 # reproducibility

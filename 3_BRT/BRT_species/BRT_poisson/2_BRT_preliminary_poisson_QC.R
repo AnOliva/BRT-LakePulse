@@ -5,7 +5,8 @@
 library(bigmemory)
 library(foreach)
 library(dplyr)
-
+# load normalization script
+source("E:/LakePulse/Chapter_2/scripts_github_export_2022_12_10/3_BRT/BRT_species/1_normalization_poisson_QC.R")
 
 ## parameters of hypergrid to be tuned
 depdt.name <- colnames(full.dataset[ , ! names(full.dataset) %in% indpdt.x, drop = F])
