@@ -6,7 +6,7 @@ Correspondence: anais.oliva@usherbrooke.ca
 
 ## Overview - Usage
 This repository contains scripts used in Oliva *et al.* (*Water Research*, submitted and under review).
-This study aims: (1) to explore the diversity of potentially pathogenic bacteria (PPB) found in 413 Canadian lakes; (2) to build a multi-indicator model of anthropogenic fecal contamination from a cluster of PPB; and (3) to predict the bacterial multi-indicator over thousands of lakes. 
+The study objectives were (1) to explore the diversity of PPB; (2) to build a fecal multi-indicator from a cluster of co-occurring PPB; and (3) to predict the fecal multi-indicator over thousands of lakes. 
 
 Boosted Regression Tree (BRT) models were applied over 1000 bootstrap samples through a boostrap aggregating (or bagging) ensemble method. This helped to determine the most influent environmental variables related to the abundance of the bacterial clusters and to make predictions.
 
@@ -35,6 +35,6 @@ For the BRT, *bigmemory* and *foreach* packages were used to share the memory an
 Those might be memory consuming (32 GB of RAM were used for the script *3_BRT_bootstrap.R*).
 
 ## Citations
-Oliva, A., Onana, E.V., Garner, R.E., Kraemer, S.A., Fradette, M., Walsh, D.A., Huot, Y., 2022. A multi-indicator mapping analysis reveals a spatial hotspot of a putative bacterial pathogens assemblage in Canadian prairie lakes that is linked to anthropogenically-altered landscapes. Water Res. *submitted*.
+Oliva, A., Onana, E.V., Garner, R.E., Kraemer, S.A., Fradette, M., Walsh, D.A., Huot, Y., 2023. Geospatial analysis reveals a hotspot of fecal bacteria in Canadian prairie lakes linked to agricultural non-point sources. Water Res. *under review*.
 
 Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. The occurrence of potentially pathogenic fungi and protists in Canadian lakes predicted using geomatics, in situ and satellite-derived variables: Towards a tele-epidemiological approach. Water Res. 209, 117935. https://doi.org/10.1016/j.watres.2021.117935
