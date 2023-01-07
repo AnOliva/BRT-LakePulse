@@ -5,12 +5,12 @@ Author: Anaïs Oliva
 Correspondence: anais.oliva@usherbrooke.ca
 
 ## Overview - Usage
-This repository contains scripts used in Oliva *et al.* (*Water Research*, submitted and under review).
+This repository contains scripts used in Oliva *et al.* (2023, submitted and under review).
 The study objectives were (1) to explore the diversity of Potentially Pathogenic Bacteria (PPB); (2) to build a fecal multi-indicator from a cluster of co-occurring PPB; and (3) to predict the fecal multi-indicator over thousands of lakes. 
 
 Boosted Regression Tree (BRT) models were applied over 1000 bootstrap samples through a boostrap aggregating (or bagging) ensemble method. 
 
-Scripts provided were used from sections 2.2.4 to 2.4 in Oliva *et al.* (2023).
+Scripts provided were used from sections 2.2.4 to 2.4 in Oliva *et al.* (2023, submitted and under review).
 
 ## Folder contents
 
