@@ -10,7 +10,7 @@ The study objectives were (1) to explore the diversity of Potentially Pathogenic
 
 Boosted Regression Tree (BRT) models were applied over 1000 bootstrap samples through a boostrap aggregating (or bagging) ensemble method. 
 
-Scripts provided were used from sections 2.2.4 to 2.4 in Oliva *et al.* (2023, submitted and under review).
+Scripts provided were used from sections 2.2.4 to 2.4 in Oliva *et al.* (2023).
 
 ## Folder contents
 
@@ -35,6 +35,6 @@ For the BRT, *bigmemory* and *foreach* packages were used to share the memory an
 Those might be memory consuming (32 GB of RAM were used for the script *3_BRT_bootstrap.R*).
 
 ## Citations
-Oliva, A., Onana, E.V., Garner, R.E., Kraemer, S.A., Fradette, M., Walsh, D.A., Huot, Y., 2023. Geospatial analysis reveals a hotspot of fecal bacteria in Canadian prairie lakes linked to agricultural non-point sources. Water Res. *under review*.
+Oliva, A., Onana, V. E., Garner, R. E., Kraemer, S. A., Fradette, M., Walsh, D. A., & Huot, Y. (2023). Geospatial analysis reveals a hotspot of fecal bacteria in Canadian prairie lakes linked to agricultural non-point sources. Water Research, 231, 119596. https://doi.org/10.1016/j.watres.2023.119596
 
 Oliva, A., Garner, R.E., Walsh, D., Huot, Y., 2022. The occurrence of potentially pathogenic fungi and protists in Canadian lakes predicted using geomatics, in situ and satellite-derived variables: Towards a tele-epidemiological approach. Water Res. 209, 117935. https://doi.org/10.1016/j.watres.2021.117935
